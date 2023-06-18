@@ -82,15 +82,45 @@ fn simulate(@builtin(global_invocation_id) id : vec3<u32>) {
   var dx = cursorx - p.x;
   var dy = cursory - p.y;
   var dist = sqrt((dx * dx) + (dy * dy));
+  var inner = 0.9;
+  var core = 0.1;
+  var jiggle = 0.1;
+  var boom = 3.0;
+  var still = 10.0;
+  var pull = 0.4;
+  var ringSlow = 0.98;
 
   if (dist < radius) {
 
-    if ((cursorxv == 0.0) && 
-        (cursoryv == 0.0)) {
-      v *= 0.8;
+    if ((abs(cursorxv) < still) && 
+        (abs(cursoryv) < still)) {
+
+      // moving
+
+      if (dist < (radius * inner)) {
+        if (dist < (radius * core)) {
+          v.x += (rand(f32(f32(id.x) * 23.0)) - 0.5) * boom;
+          v.y += (rand(f32(f32(id.x) * 31.0)) - 0.5) * boom;
+        } else {
+          v.x += (rand(f32(f32(id.x) * 23.0)) - 0.5) * jiggle;
+          v.y += (rand(f32(f32(id.x) * 31.0)) - 0.5) * jiggle;
+        }
+      } else {
+        v *= ringSlow;
+      }
+
+      // pull towards center
+      var cdx = cursorx - p.x;
+      var cdy = cursory - p.y;
+      p.x += cdx * pull;
+      p.y += cdy * pull;
+
     } else {
+
+      // still
       v.x = cursorxv * strength;
       v.y = cursoryv * strength;
+
     }
 
     velocities[id.x] = v;
@@ -115,5 +145,42 @@ fn simulate(@builtin(global_invocation_id) id : vec3<u32>) {
 
 @compute @workgroup_size(256)
 fn fade(@builtin(global_invocation_id) id : vec3<u32>) {
-  pixels[id.x] *= 0.97;
+  var i = i32(id.x);
+  var r = i32(rez);
+  var x = i / r;
+  var y = i % r;
+
+  var dx_left = i32(-1);
+  if ((x + dx_left) == 0) { dx_left = r - 1; }
+
+  var dx_right = i32(1);
+  if ((x + dx_right) == r) { dx_right = 1 - r; }
+
+  var dy_up = i32(-1);
+  if ((y + dy_up) == 0) { dy_up = r - 1; }
+
+  var dy_down = i32(1);
+  if ((y + dy_down) == r) { dy_down = 1 - r; }
+
+  var nw = pixels[i + dx_left + dy_up * r];
+  var n = pixels[i + dy_up * r];
+  var ne = pixels[i + dx_right + dy_up * r];
+  var w = pixels[i + dx_left];
+  var center = pixels[i];
+  var e = pixels[i + dx_right];
+  var sw = pixels[i + dx_left + dy_down * r];
+  var s = pixels[i + dy_down * r];
+  var se = pixels[i + dx_right + dy_down * r];
+
+  var neighborColor =
+    (nw + n + ne + w + e + sw + s + se) / 8.0;
+
+  var centerWeight = 0.2;
+  center =
+    (center * centerWeight) +
+    (neighborColor * (1.0 - centerWeight));
+
+  center *= 0.99;
+
+  pixels[id.x] = center;
 }

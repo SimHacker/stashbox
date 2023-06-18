@@ -11,7 +11,7 @@
 
     let canvas;
     const animationDelay = 10;
-    const bufferCount = 100000;
+    const bufferCount = 5000000;
     const groupSize = 256;
 
     /////////////////////////////////////////////////////////
@@ -48,8 +48,8 @@
         cursoryv: 0,
         now: 0,
         passed: 0,
-        radius: 40,
-        strength: 0.02,
+        radius: 50,
+        strength: 0.01,
       };
 
       const settings = {
