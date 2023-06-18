@@ -48,8 +48,8 @@
         cursoryv: 0,
         now: 0,
         passed: 0,
-        radius: 50,
-        strength: 0.01,
+        radius: 60,
+        strength: 0.02,
       };
 
       const settings = {

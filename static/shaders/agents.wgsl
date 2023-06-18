@@ -57,8 +57,8 @@ fn index(p: vec2<f32>) -> i32 {
 @compute @workgroup_size(256)
 fn reset(@builtin(global_invocation_id) id : vec3<u32>) {
 
-  var x = rand(f32(id.x));
-  var y = rand(f32(id.x) * 2);
+  var x = rand(f32(id.x) * 2);
+  var y = rand(f32(id.x) * 5);
   var p = vec2(x, y);
 
   p *= rez;
@@ -71,7 +71,7 @@ fn reset(@builtin(global_invocation_id) id : vec3<u32>) {
 
   colors[id.x] = c;
 
-  velocities[id.x] = vec2(rand(f32(id.x+1)), rand(f32(id.x + 2))) - 0.5;
+  velocities[id.x] = vec2(rand(f32(id.x + 1)), rand(f32(id.x + 2))) - 0.5;
 }
 
 @compute @workgroup_size(256)
@@ -82,42 +82,81 @@ fn simulate(@builtin(global_invocation_id) id : vec3<u32>) {
   var dx = cursorx - p.x;
   var dy = cursory - p.y;
   var dist = sqrt((dx * dx) + (dy * dy));
-  var inner = 0.9;
+  var ringCenter = 0.75;
+  var inner = 0.5;
   var core = 0.1;
   var jiggle = 0.1;
-  var boom = 3.0;
+  var boom = 5.0;
   var still = 10.0;
-  var pull = 0.4;
-  var ringSlow = 0.98;
+  var barf = -2.0;
+  var innerSlurp = 0.2;
+  var ringSlurp = 0.004;
+  var ringSlow = 0.5;
+  var spin = 0.8;
 
   if (dist < radius) {
 
     if ((abs(cursorxv) < still) && 
         (abs(cursoryv) < still)) {
 
-      // moving
+      // still
+
+      var pull = 0.0;
 
       if (dist < (radius * inner)) {
+
         if (dist < (radius * core)) {
+
+          // core
+
           v.x += (rand(f32(f32(id.x) * 23.0)) - 0.5) * boom;
           v.y += (rand(f32(f32(id.x) * 31.0)) - 0.5) * boom;
+
+          pull = barf;
+
         } else {
+
+          // inner
+
           v.x += (rand(f32(f32(id.x) * 23.0)) - 0.5) * jiggle;
           v.y += (rand(f32(f32(id.x) * 31.0)) - 0.5) * jiggle;
+
+          pull = innerSlurp;
+
         }
+
       } else {
+
+        // ring
+
         v *= ringSlow;
+
+        var tw = 1.0;
+        if (dist < (radius * ringCenter)) {
+          tw = -1.0;
+        }
+
+        var ang = atan2(-dx, dy);
+
+        p.x += cos(ang) * spin * tw;
+        p.y += sin(ang) * spin * tw;
+
+        pull = ringSlurp;
+
       }
 
       // pull towards center
+
       var cdx = cursorx - p.x;
       var cdy = cursory - p.y;
       p.x += cdx * pull;
       p.y += cdy * pull;
 
+
     } else {
 
-      // still
+      // moving
+
       v.x = cursorxv * strength;
       v.y = cursoryv * strength;
 
