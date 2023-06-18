@@ -11,7 +11,7 @@
 
     let canvas;
     const animationDelay = 10;
-    const bufferCount = 1000;
+    const bufferCount = 100000;
     const groupSize = 256;
 
     /////////////////////////////////////////////////////////
@@ -49,7 +49,7 @@
         now: 0,
         passed: 0,
         radius: 40,
-        strength: 0.01,
+        strength: 0.02,
       };
 
       const settings = {
@@ -339,8 +339,12 @@
             uniforms.cursoryv = 0;
           } else {
             if (passed > 0) {
-              uniforms.cursorxv = (curx - lastx) / passed;
-              uniforms.cursoryv = (cury - lasty) / passed;
+              // Smooth out the velocity change a lot.
+              var weight = 0.1;
+              var xv = (curx - lastx) / passed;
+              var yv = (cury - lasty) / passed;
+              uniforms.cursorxv = (uniforms.cursorxv * (1.0 - weight)) + (xv * weight);
+              uniforms.cursoryv = (uniforms.cursoryv * (1.0 - weight)) + (yv * weight);
             } else {
               uniforms.cursorxv = 0;
               uniforms.cursoryv = 0;
