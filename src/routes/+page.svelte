@@ -1,1 +1,5 @@
-<h1>StashBox</h1>
+<script>
+    import WebGPUTest from '$lib/components/WebGPUTest.svelte';
+  </script>
+  
+  <WebGPUTest/>
