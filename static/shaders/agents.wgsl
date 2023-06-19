@@ -91,10 +91,10 @@ fn simulate(@builtin(global_invocation_id) id : vec3<u32>) {
   var barf = -6.0;
   var innerSlurp = 0.6;
   var ringSlurp = 0.002;
-  var ringNoise = 0.2;
+  var ringNoise = 0.4;
   var ringSlow = 0.5;
-  var spin = 0.5;
-  var distRings = 0.05;
+  var spin = 0.8;
+  var distRings = 0.1;
 
   if (dist < radius) {
 
@@ -146,7 +146,7 @@ fn simulate(@builtin(global_invocation_id) id : vec3<u32>) {
           tw = -1.0;
         }
 
-        tw = sin(dist * distRings);
+        tw = cos(dist * distRings);
 
         var ang = atan2(-dx, dy);
 
