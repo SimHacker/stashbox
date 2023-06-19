@@ -110,9 +110,10 @@ fn simulate(@builtin(global_invocation_id) id : vec3<u32>) {
         // Set the particle's color when it falls into the inner sanctum.
 
         var colorTimeScale = 0.003;
-        colors[id.x].r = sin(time * colorTimeScale * 1.1);
-        colors[id.x].g = sin(time * colorTimeScale * 1.4);
-        colors[id.x].b = sin(time * colorTimeScale * 1.7);
+        var distTimeEntangle = 3.0;
+        colors[id.x].r = sin((time + dist * distTimeEntangle * 2.7) * colorTimeScale * 1.1);
+        colors[id.x].g = sin((time + dist * distTimeEntangle * 1.6) * colorTimeScale * 1.4);
+        colors[id.x].b = sin((time + dist * distTimeEntangle * 3.4) * colorTimeScale * 1.7);
 
         if (dist < (radius * core)) {
 
@@ -228,12 +229,13 @@ fn fade(@builtin(global_invocation_id) id : vec3<u32>) {
   var neighborColor =
     (nw + n + ne + w + e + sw + s + se) / 8.0;
 
-  var centerWeight = 0.2;
+  var centerWeight = 0.8;
   center =
     (center * centerWeight) +
     (neighborColor * (1.0 - centerWeight));
 
-  center *= 0.99;
+  var fadeWeight = 0.992;
+  center *= fadeWeight;
 
   pixels[id.x] = center;
 }
