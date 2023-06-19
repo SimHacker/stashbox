@@ -51,7 +51,7 @@
         cursoryv: 0,
         now: 0,
         passed: 0,
-        radius: 60,
+        radius: 80,
         strength: 0.02,
       };
 

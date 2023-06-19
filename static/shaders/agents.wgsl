@@ -83,17 +83,18 @@ fn simulate(@builtin(global_invocation_id) id : vec3<u32>) {
   var dy = cursory - p.y;
   var dist = sqrt((dx * dx) + (dy * dy));
   var ringCenter = 0.75;
-  var inner = 0.5;
+  var inner = 0.4;
   var core = 0.1;
-  var jiggle = 0.1;
-  var boom = 5.0;
+  var jiggle = 0.3;
+  var boom = 6.0;
   var still = 10.0;
-  var barf = -3.0;
-  var innerSlurp = 0.1;
-  var ringSlurp = -0.0001;
+  var barf = -6.0;
+  var innerSlurp = 0.6;
+  var ringSlurp = 0.002;
   var ringNoise = 0.2;
   var ringSlow = 0.5;
-  var spin = 0.8;
+  var spin = 0.5;
+  var distRings = 0.05;
 
   if (dist < radius) {
 
@@ -105,6 +106,13 @@ fn simulate(@builtin(global_invocation_id) id : vec3<u32>) {
       var pull = 0.0;
 
       if (dist < (radius * inner)) {
+
+        // Set the particle's color when it falls into the inner sanctum.
+
+        var colorTimeScale = 0.003;
+        colors[id.x].r = sin(time * colorTimeScale * 1.1);
+        colors[id.x].g = sin(time * colorTimeScale * 1.4);
+        colors[id.x].b = sin(time * colorTimeScale * 1.7);
 
         if (dist < (radius * core)) {
 
@@ -136,6 +144,8 @@ fn simulate(@builtin(global_invocation_id) id : vec3<u32>) {
         if (dist < (radius * ringCenter)) {
           tw = -1.0;
         }
+
+        tw = sin(dist * distRings);
 
         var ang = atan2(-dx, dy);
 
