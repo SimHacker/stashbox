@@ -1,0 +1,10 @@
+wgsl documentation and examples
+
+What are the differences between wgsl and webgl shader language?
+
+github code search, filter by language, mappedAtCreation
+
+compute.toy
+shadertoy for webgpu
+
+wgsl examples

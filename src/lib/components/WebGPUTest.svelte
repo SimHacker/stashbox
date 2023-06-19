@@ -21,6 +21,9 @@
       main(canvas);
     });
 
+    /////////////////////////////////////////////////////////
+    // Utilities
+
     function getCursorPosition(canvas, event, rez) {
         const rect = canvas.getBoundingClientRect();
         const xScale = rez / rect.width;
