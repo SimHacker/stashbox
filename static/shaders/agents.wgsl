@@ -88,9 +88,10 @@ fn simulate(@builtin(global_invocation_id) id : vec3<u32>) {
   var jiggle = 0.1;
   var boom = 5.0;
   var still = 10.0;
-  var barf = -2.0;
-  var innerSlurp = 0.2;
-  var ringSlurp = -0.00001;
+  var barf = -3.0;
+  var innerSlurp = 0.1;
+  var ringSlurp = -0.0001;
+  var ringNoise = 0.2;
   var ringSlow = 0.5;
   var spin = 0.8;
 
@@ -141,7 +142,10 @@ fn simulate(@builtin(global_invocation_id) id : vec3<u32>) {
         p.x += cos(ang) * spin * tw;
         p.y += sin(ang) * spin * tw;
 
-        pull = ringSlurp;
+        v.x += (rand(f32(f32(id.x) * 77.0)) - 0.5) * ringNoise;
+        v.y += (rand(f32(f32(id.x) * 81.0)) - 0.5) * ringNoise;
+
+        pull = ringSlurp * tw;
 
       }
 
