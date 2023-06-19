@@ -90,7 +90,7 @@ fn simulate(@builtin(global_invocation_id) id : vec3<u32>) {
   var still = 10.0;
   var barf = -2.0;
   var innerSlurp = 0.2;
-  var ringSlurp = 0.004;
+  var ringSlurp = -0.00001;
   var ringSlow = 0.5;
   var spin = 0.8;
 
