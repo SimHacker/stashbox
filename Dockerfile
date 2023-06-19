@@ -1,23 +1,22 @@
-# Use an official Node runtime as the base image
-FROM node:latest
+FROM node:16-alpine as build
 
-# Set the working directory in the container to /app
 WORKDIR /app
 
-# Copy package.json and package-lock.json
 COPY package*.json ./
 
-# Install the application
 RUN npm install
 
-# Bundle app source
 COPY . .
 
-# Build the app
 RUN npm run build
 
-# Expose port 8080 for the app
-EXPOSE $PORT
+FROM node:16-alpine
 
-# Run the app
-CMD [ "npm", "start" ]
+WORKDIR /app
+
+COPY --from=build /app/package*.json ./
+COPY --from=build /app/build ./
+
+EXPOSE 3000
+
+CMD ["node", "./index.js"]
