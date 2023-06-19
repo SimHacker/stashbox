@@ -1,3 +1,6 @@
 // server.js
-const { PORT = 5000 } = process.env;
-require('./build/index.js').start({ port: PORT });
+import { start } from './build/index.js';
+
+const PORT = process.env.PORT || 5000;
+
+start({ port: PORT });
