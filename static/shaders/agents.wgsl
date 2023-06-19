@@ -87,7 +87,7 @@ fn simulate(@builtin(global_invocation_id) id : vec3<u32>) {
   var core = 0.1;
   var jiggle = 0.3;
   var boom = 6.0;
-  var still = 10.0;
+  var still = 100.0;
   var barf = -6.0;
   var innerSlurp = 0.6;
   var ringSlurp = 0.002;
