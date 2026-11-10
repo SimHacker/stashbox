@@ -1,5 +1,7 @@
+// WebGPUTest0-agents.wgsl
+
 // Pixels
-@group(0) @binding(0)  
+@group(0) @binding(0)
   var<storage, read_write> pixels : array<vec4<f32>>;
 
 // Uniforms
@@ -34,16 +36,16 @@
   var<uniform> strength : f32;
 
 // Agent positions
-@group(2) @binding(0)  
+@group(2) @binding(0)
   var<storage, read_write> positions : array<vec2<f32>>;
 
 // Agent velocities
-@group(2) @binding(1)  
+@group(2) @binding(1)
   var<storage, read_write> velocities : array<vec2<f32>>;
 
-// Agent colors
-@group(2) @binding(2)  
-  var<storage, read_write> colors : array<vec4<f32>>;
+// Agent color
+@group(2) @binding(2)
+  var<storage, read_write> color : array<vec4<f32>>;
 
 fn rand(n: f32) -> f32 {
   let x = sin(n) * 43758.5453;
@@ -55,27 +57,35 @@ fn index(p: vec2<f32>) -> i32 {
 }
 
 @compute @workgroup_size(256)
-fn reset(@builtin(global_invocation_id) id : vec3<u32>) {
+fn resetPixels(@builtin(global_invocation_id) id : vec3<u32>) {
+  pixels[id.x] = vec4(0.0, 0.0, 0.0, 1.0);
+}
 
-  var x = rand(f32(id.x) * 2);
-  var y = rand(f32(id.x) * 5);
+@compute @workgroup_size(256)
+fn resetAgents(@builtin(global_invocation_id) id : vec3<u32>) {
+
+  var seed = f32(id.x);
+  var x = rand(seed * 2.0);
+  var y = rand(seed * 5.0);
   var p = vec2(x, y);
 
   p *= rez;
   positions[id.x] = p;
 
-  var r = rand(f32(id.x) * 7);
-  var g = rand(f32(id.x) * 11);
-  var b = rand(f32(id.x) * 17);
+  velocities[id.x] =
+    vec2(
+      rand(seed * 87.0),
+      rand(seed * 57.0)) - 0.5;
+
+  var r = rand(seed * 7.0);
+  var g = rand(seed * 11.0);
+  var b = rand(seed * 17.0);
   var c = vec4(r, g, b, 1.0);
-
-  colors[id.x] = c;
-
-  velocities[id.x] = vec2(rand(f32(id.x + 1)), rand(f32(id.x + 2))) - 0.5;
+  color[id.x] = c;
 }
 
 @compute @workgroup_size(256)
-fn simulate(@builtin(global_invocation_id) id : vec3<u32>) {
+fn runSimulate(@builtin(global_invocation_id) id : vec3<u32>) {
   var p = positions[id.x];
   var v = velocities[id.x];
 
@@ -95,10 +105,11 @@ fn simulate(@builtin(global_invocation_id) id : vec3<u32>) {
   var ringSlow = 0.5;
   var spin = 0.8;
   var distRings = 0.1;
+  var seed = f32(id.x);
 
   if (dist < radius) {
 
-    if ((abs(cursorxv) < still) && 
+    if ((abs(cursorxv) < still) &&
         (abs(cursoryv) < still)) {
 
       // still
@@ -111,16 +122,16 @@ fn simulate(@builtin(global_invocation_id) id : vec3<u32>) {
 
         var colorTimeScale = 0.003;
         var distTimeEntangle = 3.0;
-        colors[id.x].r = sin((time + dist * distTimeEntangle * 2.7) * colorTimeScale * 1.1);
-        colors[id.x].g = sin((time + dist * distTimeEntangle * 1.6) * colorTimeScale * 1.4);
-        colors[id.x].b = sin((time + dist * distTimeEntangle * 3.4) * colorTimeScale * 1.7);
+        color[id.x].r = sin((time + dist * distTimeEntangle * 2.7) * colorTimeScale * 1.1);
+        color[id.x].g = sin((time + dist * distTimeEntangle * 1.6) * colorTimeScale * 1.4);
+        color[id.x].b = sin((time + dist * distTimeEntangle * 3.4) * colorTimeScale * 1.7);
 
         if (dist < (radius * core)) {
 
           // core
 
-          v.x += (rand(f32(f32(id.x) * 23.0)) - 0.5) * boom;
-          v.y += (rand(f32(f32(id.x) * 31.0)) - 0.5) * boom;
+          v.x += (rand(f32(seed * 23.0)) - 0.5) * boom;
+          v.y += (rand(f32(seed * 31.0)) - 0.5) * boom;
 
           pull = barf;
 
@@ -128,8 +139,8 @@ fn simulate(@builtin(global_invocation_id) id : vec3<u32>) {
 
           // inner
 
-          v.x += (rand(f32(f32(id.x) * 23.0)) - 0.5) * jiggle;
-          v.y += (rand(f32(f32(id.x) * 31.0)) - 0.5) * jiggle;
+          v.x += (rand(f32(seed * 23.0)) - 0.5) * jiggle;
+          v.y += (rand(f32(seed * 31.0)) - 0.5) * jiggle;
 
           pull = innerSlurp;
 
@@ -153,8 +164,8 @@ fn simulate(@builtin(global_invocation_id) id : vec3<u32>) {
         p.x += cos(ang) * spin * tw;
         p.y += sin(ang) * spin * tw;
 
-        v.x += (rand(f32(f32(id.x) * 77.0)) - 0.5) * ringNoise;
-        v.y += (rand(f32(f32(id.x) * 81.0)) - 0.5) * ringNoise;
+        v.x += (rand(f32(seed * 77.0)) - 0.5) * ringNoise;
+        v.y += (rand(f32(seed * 81.0)) - 0.5) * ringNoise;
 
         pull = ringSlurp * tw;
 
@@ -179,26 +190,18 @@ fn simulate(@builtin(global_invocation_id) id : vec3<u32>) {
 
     velocities[id.x] = v;
 
-    if (false) {
-      var weight = 0.1;
-      p.x = (p.x * (1.0 - weight) + (cursorx * weight));
-      p.x = (p.y * (1.0 - weight) + (cursory * weight));
-    }
   }
-
-  //p.x = cursorx; p.y = cursory; positions[id.x] = p;
 
   p += v;
   p = (p + rez) % rez;
 
   positions[id.x] = p;
 
-  pixels[index(p)] = colors[id.x];
+  pixels[index(p)] = color[id.x];
 }
 
-
 @compute @workgroup_size(256)
-fn fade(@builtin(global_invocation_id) id : vec3<u32>) {
+fn runFade(@builtin(global_invocation_id) id : vec3<u32>) {
   var i = i32(id.x);
   var r = i32(rez);
   var x = i / r;
